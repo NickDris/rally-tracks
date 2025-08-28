@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # this is a comment
+# just another comment
 set -eo pipefail
 
 source .buildkite/retry.sh
