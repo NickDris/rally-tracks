@@ -28,11 +28,12 @@ jobs:
         run: cat ~/.backport/backport.debug.log
 
   add-backport-label:
-      if: github.event.pull_request.base.ref == 'master'
-      runs-on: ubuntu-latest
-      permissions: 
-        pull-requests: write
-      steps:
+    name: Add backport label
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'master'
+    permissions:
+      pull-requests: write
+    steps:
         - name: Add label with gh CLI
           run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"
           env:
