@@ -1,0 +1,37 @@
+name: Backport-pending weekly reminders
+
+on:
+  schedule:
+    # Every 5 minutes
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write            # to post comments
+  pull-requests: read      # to read PR + requested reviewers
+
+env:
+  LABEL_NAME: backport-pending
+  TARGET_BRANCH: master
+  REMIND_AFTER_DAYS: "7"     # first reminder threshold
+  REMIND_EVERY_DAYS: "7"     # subsequent reminder interval
+  MARKER: "[backport-pending-reminder]"
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run reminder
+        env:
+          GITHUB_TOKEN: ${{ secrets.BACKPORT_TOKEN }}
+          LABEL_NAME: ${{ env.LABEL_NAME }}
+          TARGET_BRANCH: ${{ env.TARGET_BRANCH }}
+          REMIND_AFTER_DAYS: ${{ env.REMIND_AFTER_DAYS }}
+          REMIND_EVERY_DAYS: ${{ env.REMIND_EVERY_DAYS }}
+          MARKER: ${{ env.MARKER }}
+        run: |
+          node --version
+          node .github/scripts/remind-backport.js
