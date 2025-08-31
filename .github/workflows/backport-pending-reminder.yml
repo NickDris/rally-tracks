@@ -24,14 +24,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+      - name: Install requests
+        run: pip install requests
+
       - name: Run reminder
         env:
-          GITHUB_TOKEN: ${{ secrets.BACKPORT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABEL_NAME: ${{ env.LABEL_NAME }}
           TARGET_BRANCH: ${{ env.TARGET_BRANCH }}
           REMIND_AFTER_DAYS: ${{ env.REMIND_AFTER_DAYS }}
           REMIND_EVERY_DAYS: ${{ env.REMIND_EVERY_DAYS }}
           MARKER: ${{ env.MARKER }}
-        run: |
-          node --version
-          node .github/scripts/remind-backport.js
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python .github/scripts/remind-backport.py
