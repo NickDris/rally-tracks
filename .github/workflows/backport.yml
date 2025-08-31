@@ -40,4 +40,4 @@ jobs:
         - name: Add label with gh CLI
           run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"
           env:
-            GH_TOKEN: ${{ secrets.BACKPORT_TOKEN }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
