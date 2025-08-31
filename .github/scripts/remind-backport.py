@@ -138,7 +138,7 @@ Please review next steps for backporting (or remove the label if no longer neede
 """
         create_comment(number, body)
         print(f"#{number}: posted reminder (age {age_days}d).")
-        time.sleep(0.2)
+        time.sleep(0.3)
 
     print("Done.")
 
