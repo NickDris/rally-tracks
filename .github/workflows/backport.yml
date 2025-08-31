@@ -37,6 +37,7 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v4
 
+        # Just a comment for test
         - name: Add label with gh CLI
           run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"
           env:
