@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
   issues: write            # to post comments
-  pull-requests: read      # to read PR + requested reviewers
+  pull-requests: write      # to read PR + requested reviewers
 
 env:
   LABEL_NAME: backport-pending
