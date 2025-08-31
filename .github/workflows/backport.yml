@@ -25,4 +25,19 @@ jobs:
         
       - name: Debug log
         if: ${{ failure() }}
-        run: cat ~/.backport/backport.debug.log 
+        run: cat ~/.backport/backport.debug.log
+
+  add-backport-label:
+    name: Add backport label
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.base.ref == 'master'
+    permissions:
+      pull-requests: write
+    steps:
+        - name: Install GitHub CLI
+          run: sudo apt-get install gh
+
+        - name: Add label with gh CLI
+          run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"
+          env:
+            GH_TOKEN: ${{ secrets.BACKPORT_TOKEN }}
