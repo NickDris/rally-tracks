@@ -133,8 +133,7 @@ def run():
 This pull request targets `{TARGET_BRANCH}` and has the `{LABEL_NAME}` label for **{age_days} days**.
 Please review next steps for backporting (or remove the label if no longer needed).
 
-- Threshold: `{AFTER_DAYS}d`
-- Re-reminder interval: `{EVERY_DAYS}d`
+This reminder will repeat every `{EVERY_DAYS} days` until backport-pending label is removed.
 """
         create_comment(number, body)
         print(f"#{number}: posted reminder (age {age_days}d).")
