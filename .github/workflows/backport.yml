@@ -34,8 +34,8 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-        - name: Install GitHub CLI
-          run: sudo apt-get install gh
+        - name: Checkout repository
+          uses: actions/checkout@v4
 
         - name: Add label with gh CLI
           run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"
