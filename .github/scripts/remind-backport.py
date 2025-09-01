@@ -1,8 +1,9 @@
 import os
 import sys
 import time
-import requests
 from datetime import datetime
+
+import requests
 
 TOKEN = os.getenv("GITHUB_TOKEN")
 if not TOKEN:
@@ -27,6 +28,7 @@ HEADERS = {
     "User-Agent": "backport-pending-reminder-script",
 }
 
+
 def api(path, method="GET", data=None):
     url = f"https://api.github.com{path}"
     resp = requests.request(method, url, headers=HEADERS, json=data)
@@ -40,6 +42,7 @@ def api(path, method="GET", data=None):
         print(f"{method} {path} failed: {resp.status_code} {resp.text}")
         sys.exit(1)
     return resp.json()
+
 
 def paginate(path, params=None):
     results = []
@@ -56,9 +59,11 @@ def paginate(path, params=None):
         page += 1
     return results
 
+
 def days_between(a, b):
     # 5 minutes as "1 day" for testing
     return int((a - b).total_seconds() // (60 * 5))
+
 
 def list_prs_with_label(label):
     # Get all PRs (any state) with the label
@@ -68,17 +73,22 @@ def list_prs_with_label(label):
     # Filter only PRs (not issues)
     return [pr for pr in prs if "pull_request" in pr]
 
+
 def get_pull(pull_number):
     return api(f"/repos/{OWNER}/{REPO}/pulls/{pull_number}")
+
 
 def list_issue_events(number):
     return paginate(f"/repos/{OWNER}/{REPO}/issues/{number}/events")
 
+
 def list_comments(number):
     return paginate(f"/repos/{OWNER}/{REPO}/issues/{number}/comments")
 
+
 def create_comment(number, body):
     return api(f"/repos/{OWNER}/{REPO}/issues/{number}/comments", method="POST", data={"body": body})
+
 
 def run():
     now = datetime.utcnow()
@@ -98,7 +108,8 @@ def run():
         events = list_issue_events(number)
         labeled_events = sorted(
             [e for e in events if e.get("event") == "labeled" and e.get("label", {}).get("name") == LABEL_NAME],
-            key=lambda e: e["created_at"], reverse=True
+            key=lambda e: e["created_at"],
+            reverse=True,
         )
         if not labeled_events:
             print(f"#{number}: no labeled event found (label may be pre-existing), skipping.")
@@ -112,8 +123,14 @@ def run():
 
         comments = list_comments(number)
         recent_reminder_comments = sorted(
-            [c for c in comments if (c.get("user", {}).get("type") == "Bot" or "github-actions" in c.get("user", {}).get("login", "")) and MARKER in c.get("body", "")],
-            key=lambda c: c["created_at"], reverse=True
+            [
+                c
+                for c in comments
+                if (c.get("user", {}).get("type") == "Bot" or "github-actions" in c.get("user", {}).get("login", ""))
+                and MARKER in c.get("body", "")
+            ],
+            key=lambda c: c["created_at"],
+            reverse=True,
         )
         if recent_reminder_comments:
             last_at = datetime.strptime(recent_reminder_comments[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
@@ -122,7 +139,7 @@ def run():
                 print(f"#{number}: reminded {since}d ago (< {EVERY_DAYS}d), skipping.")
                 continue
 
-        author = f"@{pr.get('user', {}).get('login', '')}" if pr.get('user', {}).get('login') else ""
+        author = f"@{pr.get('user', {}).get('login', '')}" if pr.get("user", {}).get("login") else ""
         requested_users = [f"@{u['login']}" for u in pr.get("requested_reviewers", [])]
         requested_teams = [f"@{pr['base']['repo']['owner']['login']}/{t['slug']}" for t in pr.get("requested_teams", [])]
         mentions = " ".join(filter(None, [author] + requested_users + requested_teams))
@@ -133,14 +150,14 @@ def run():
 This pull request targets `{TARGET_BRANCH}` and has the `{LABEL_NAME}` label for **{age_days} days**.
 Please review next steps for backporting (or remove the label if no longer needed).
 
-- Threshold: `{AFTER_DAYS}d`
-- Re-reminder interval: `{EVERY_DAYS}d`
+This reminder will repeat every `{EVERY_DAYS} days` until backport-pending label is removed.
 """
         create_comment(number, body)
         print(f"#{number}: posted reminder (age {age_days}d).")
         time.sleep(0.3)
 
     print("Done.")
+
 
 if __name__ == "__main__":
     try:
