@@ -19,7 +19,7 @@ jobs:
       - name: Add label with gh CLI
         run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"  
       
-      # First comment on the PR that backport is needed. Then the reminder is set.
+      # First comment on the PR to inform about backporting and then let the reminder fire off.
       - name: Add backport-pending label description
         run: |
           gh pr comment ${{ github.event.pull_request.number }} --body "The `backport-pending` label indicates that this pull request requires backporting. Please review next steps for backporting."

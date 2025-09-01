@@ -1,22 +1,18 @@
-name: Backport-pending weekly reminders
+name: Backport-pending daily reminders
 
 on:
   schedule:
-    # Every 5 minutes
-    - cron: "*/5 * * * *"
+    - cron: "0 9 * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: read
-  issues: write            # to post comments
-  pull-requests: write      # to read PR + requested reviewers
+  issues: write         # to post comments
+  pull-requests: write  # to read PR info + access reviewers
 
 env:
-  LABEL_NAME: backport-pending
-  TARGET_BRANCH: master
-  REMIND_AFTER_DAYS: "7"     # first reminder threshold
-  REMIND_EVERY_DAYS: "7"     # subsequent reminder interval
-  MARKER: "[backport-pending-reminder]"
+  TARGET_BRANCH: "master"
+  REMIND_EVERY_DAYS: "7" 
 
 jobs:
   remind:
@@ -33,10 +29,7 @@ jobs:
       - name: Run reminder
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LABEL_NAME: ${{ env.LABEL_NAME }}
           TARGET_BRANCH: ${{ env.TARGET_BRANCH }}
-          REMIND_AFTER_DAYS: ${{ env.REMIND_AFTER_DAYS }}
           REMIND_EVERY_DAYS: ${{ env.REMIND_EVERY_DAYS }}
-          MARKER: ${{ env.MARKER }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python .github/scripts/remind-backport.py
+        run: python .github/scripts/backport-reminder.py
