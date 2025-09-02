@@ -6,84 +6,31 @@ on:
   # Allows triggering the job manually
   workflow_dispatch:
 
+env:
+  EXCLUDE_FOLDERS: ".github,.buildkite"
+
 jobs:
   filter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Dynamically parse tracks
+        run: |
+          python3 <<EOF
+          import os, yaml
+          exclude = set(os.environ.get('EXCLUDE_FOLDERS', '').split(','))
+          filters = {}
+          for entry in os.listdir('.'):
+              if os.path.isdir(entry) and entry not in exclude:
+                  filters[entry] = [f"{entry}/**"]
+          with open('.github/filters.yml', 'w') as f:
+              yaml.dump(filters, f, default_flow_style=False)
+          EOF
       - uses: dorny/paths-filter@v3
         id: changes
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          filters: |
-            big5:
-              - 'big5/**'
-            cohere_vector:
-              - 'cohere_vector/**'
-            dense_vector:
-              - 'dense_vector/**'
-            elastic:
-              - 'elastic/**'
-            elser-ingest-speedtest:
-              - 'elser-ingest-speedtest/**'
-            eql:
-              - 'eql/**'
-            esql:
-              - 'esql/**'
-            geonames:
-              - 'geonames/**'
-            geopoint:
-              - 'geopoint/**'
-            geopointshape:
-              - 'geopointshape/**'
-            geoshape:
-              - 'geoshape/**'
-            github_archive:
-              - 'github_archive/**'
-            http_logs:
-              - 'http_logs/**'
-            it:
-              - 'it/**'
-            it_serverless:
-              - 'it_serverless/**'
-            joins:
-              - 'joins/**'
-            k8s_metrics:
-              - 'k8s_metrics/**'
-            metricbeat:
-              - 'metricbeat/**'
-            msmarco-passage-ranking:
-              - 'msmarco-passage-ranking/**'
-            msmarco-v2-vector:
-              - 'msmarco-v2-vector/**'
-            nested:
-              - 'nested/**'
-            noaa:
-              - 'noaa/**'
-            nyc_taxis:
-              - 'nyc_taxis/**'
-            openai_vector:
-              - 'openai_vector/**'
-            percolator:
-              - 'percolator/**'
-            pmc:
-              - 'pmc/**'
-            random_vector:
-              - 'random_vector/**'
-            search:
-              - 'search/**'
-            so:
-              - 'so/**'
-            so_vector:
-              - 'so_vector/**'
-            sql:
-              - 'sql/**'
-            tsdb:
-              - 'tsdb/**'
-            tsdb_k8s_queries:
-              - 'tsdb_k8s_queries/**'
-            wikipedia:
-              - 'wikipedia/**'
+          filters: .github/filters.yml
       - name: big5 tests
         run: |
           if [ "${{ steps.changes.outputs.big5 }}" = "true" ]; then
