@@ -3,6 +3,7 @@ name: Backport-pending daily reminders
 on:
   schedule:
     - cron: "0 9 * * *"
+  # Allows triggering the job manually
   workflow_dispatch: {}
 
 permissions:
