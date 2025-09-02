@@ -9,41 +9,6 @@ on:
 jobs:
   filter:
     runs-on: ubuntu-latest
-    outputs:
-      big5: ${{ steps.changes.outputs.big5 }}
-      cohere_vector: ${{ steps.changes.outputs.cohere_vector }}
-      dense_vector: ${{ steps.changes.outputs.dense_vector }}
-      elastic: ${{ steps.changes.outputs.elastic }}
-      elser-ingest-speedtest: ${{ steps.changes.outputs.elser-ingest-speedtest }}
-      eql: ${{ steps.changes.outputs.eql }}
-      esql: ${{ steps.changes.outputs.esql }}
-      geonames: ${{ steps.changes.outputs.geonames }}
-      geopoint: ${{ steps.changes.outputs.geopoint }}
-      geopointshape: ${{ steps.changes.outputs.geopointshape }}
-      geoshape: ${{ steps.changes.outputs.geoshape }}
-      github_archive: ${{ steps.changes.outputs.github_archive }}
-      http_logs: ${{ steps.changes.outputs.http_logs }}
-      it: ${{ steps.changes.outputs.it }}
-      it_serverless: ${{ steps.changes.outputs.it_serverless }}
-      joins: ${{ steps.changes.outputs.joins }}
-      k8s_metrics: ${{ steps.changes.outputs.k8s_metrics }}
-      metricbeat: ${{ steps.changes.outputs.metricbeat }}
-      msmarco-passage-ranking: ${{ steps.changes.outputs.msmarco-passage-ranking }}
-      msmarco-v2-vector: ${{ steps.changes.outputs.msmarco-v2-vector }}
-      nested: ${{ steps.changes.outputs.nested }}
-      noaa: ${{ steps.changes.outputs.noaa }}
-      nyc_taxis: ${{ steps.changes.outputs.nyc_taxis }}
-      openai_vector: ${{ steps.changes.outputs.openai_vector }}
-      percolator: ${{ steps.changes.outputs.percolator }}
-      pmc: ${{ steps.changes.outputs.pmc }}
-      random_vector: ${{ steps.changes.outputs.random_vector }}
-      search: ${{ steps.changes.outputs.search }}
-      so: ${{ steps.changes.outputs.so }}
-      so_vector: ${{ steps.changes.outputs.so_vector }}
-      sql: ${{ steps.changes.outputs.sql }}
-      tsdb: ${{ steps.changes.outputs.tsdb }}
-      tsdb_k8s_queries: ${{ steps.changes.outputs.tsdb_k8s_queries }}
-      wikipedia: ${{ steps.changes.outputs.wikipedia }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
