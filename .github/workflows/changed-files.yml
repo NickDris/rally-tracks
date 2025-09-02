@@ -3,8 +3,6 @@ on:
   push:
     branches: [ master, '[0-9]*' ]
   pull_request:
-  schedule:
-    - cron: '0 14 * * *'
   # Allows triggering the job manually
   workflow_dispatch:
 
@@ -51,6 +49,7 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: changes
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           filters: |
             big5:
               - 'big5/**'
