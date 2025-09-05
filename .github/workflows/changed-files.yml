@@ -14,6 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: "Install dependencies"
+        run: python -m pip install .[develop]
       - name: Dynamically parse tracks
         run: |
           python3 <<EOF
@@ -31,174 +38,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           filters: .github/filters.yml
-      - name: big5 tests
+      - name: Build track filter list
+        id: track_filter
         run: |
-          if [ "${{ steps.changes.outputs.big5 }}" = "true" ]; then
-            echo "Running big5 tests..."
-          fi
-      - name: cohere_vector tests
-        run: |
-          if [ "${{ steps.changes.outputs.cohere_vector }}" = "true" ]; then
-            echo "Running cohere_vector tests..."
-          fi
-      - name: dense_vector tests
-        run: |
-          if [ "${{ steps.changes.outputs.dense_vector }}" = "true" ]; then
-            echo "Running dense_vector tests..."
-          fi
-      - name: elastic tests
-        run: |
-          if [ "${{ steps.changes.outputs.elastic }}" = "true" ]; then
-            echo "Running elastic tests..."
-          fi
-      - name: elser-ingest-speedtest tests
-        run: |
-          if [ "${{ steps.changes.outputs.elser-ingest-speedtest }}" = "true" ]; then
-            echo "Running elser-ingest-speedtest tests..."
-          fi
-      - name: eql tests
-        run: |
-          if [ "${{ steps.changes.outputs.eql }}" = "true" ]; then
-            echo "Running eql tests..."
-          fi
-      - name: esql tests
-        run: |
-          if [ "${{ steps.changes.outputs.esql }}" = "true" ]; then
-            echo "Running esql tests..."
-          fi
-      - name: geonames tests
-        run: |
-          if [ "${{ steps.changes.outputs.geonames }}" = "true" ]; then
-            echo "Running geonames tests..."
-          fi
-      - name: geopoint tests
-        run: |
-          if [ "${{ steps.changes.outputs.geopoint }}" = "true" ]; then
-            echo "Running geopoint tests..."
-          fi
-      - name: geopointshape tests
-        run: |
-          if [ "${{ steps.changes.outputs.geopointshape }}" = "true" ]; then
-            echo "Running geopointshape tests..."
-          fi
-      - name: geoshape tests
-        run: |
-          if [ "${{ steps.changes.outputs.geoshape }}" = "true" ]; then
-            echo "Running geoshape tests..."
-          fi
-      - name: github_archive tests
-        run: |
-          if [ "${{ steps.changes.outputs.github_archive }}" = "true" ]; then
-            echo "Running github_archive tests..."
-          fi
-      - name: http_logs tests
-        run: |
-          if [ "${{ steps.changes.outputs.http_logs }}" = "true" ]; then
-            echo "Running http_logs tests..."
-          fi
-      - name: it tests
-        run: |
-          if [ "${{ steps.changes.outputs.it }}" = "true" ]; then
-            echo "Running it tests..."
-          fi
-      - name: it_serverless tests
-        run: |
-          if [ "${{ steps.changes.outputs.it_serverless }}" = "true" ]; then
-            echo "Running it_serverless tests..."
-          fi
-      - name: joins tests
-        run: |
-          if [ "${{ steps.changes.outputs.joins }}" = "true" ]; then
-            echo "Running joins tests..."
-          fi
-      - name: k8s_metrics tests
-        run: |
-          if [ "${{ steps.changes.outputs.k8s_metrics }}" = "true" ]; then
-            echo "Running k8s_metrics tests..."
-          fi
-      - name: metricbeat tests
-        run: |
-          if [ "${{ steps.changes.outputs.metricbeat }}" = "true" ]; then
-            echo "Running metricbeat tests..."
-          fi
-      - name: msmarco-passage-ranking tests
-        run: |
-          if [ "${{ steps.changes.outputs.msmarco-passage-ranking }}" = "true" ]; then
-            echo "Running msmarco-passage-ranking tests..."
-          fi
-      - name: msmarco-v2-vector tests
-        run: |
-          if [ "${{ steps.changes.outputs.msmarco-v2-vector }}" = "true" ]; then
-            echo "Running msmarco-v2-vector tests..."
-          fi
-      - name: nested tests
-        run: |
-          if [ "${{ steps.changes.outputs.nested }}" = "true" ]; then
-            echo "Running nested tests..."
-          fi
-      - name: noaa tests
-        run: |
-          if [ "${{ steps.changes.outputs.noaa }}" = "true" ]; then
-            echo "Running noaa tests..."
-          fi
-      - name: nyc_taxis tests
-        run: |
-          if [ "${{ steps.changes.outputs.nyc_taxis }}" = "true" ]; then
-            echo "Running nyc_taxis tests..."
-          fi
-      - name: openai_vector tests
-        run: |
-          if [ "${{ steps.changes.outputs.openai_vector }}" = "true" ]; then
-            echo "Running openai_vector tests..."
-          fi
-      - name: percolator tests
-        run: |
-          if [ "${{ steps.changes.outputs.percolator }}" = "true" ]; then
-            echo "Running percolator tests..."
-          fi
-      - name: pmc tests
-        run: |
-          if [ "${{ steps.changes.outputs.pmc }}" = "true" ]; then
-            echo "Running pmc tests..."
-          fi
-      - name: random_vector tests
-        run: |
-          if [ "${{ steps.changes.outputs.random_vector }}" = "true" ]; then
-            echo "Running random_vector tests..."
-          fi
-      - name: search tests
-        run: |
-          if [ "${{ steps.changes.outputs.search }}" = "true" ]; then
-            echo "Running search tests..."
-          fi
-      - name: so tests
-        run: |
-          if [ "${{ steps.changes.outputs.so }}" = "true" ]; then
-            echo "Running so tests..."
-          fi
-      - name: so_vector tests
-        run: |
-          if [ "${{ steps.changes.outputs.so_vector }}" = "true" ]; then
-            echo "Running so_vector tests..."
-          fi
-      - name: sql tests
-        run: |
-          if [ "${{ steps.changes.outputs.sql }}" = "true" ]; then
-            echo "Running sql tests..."
-          fi
-      - name: tsdb tests
-        run: |
-          if [ "${{ steps.changes.outputs.tsdb }}" = "true" ]; then
-            echo "Running tsdb tests..."
-          fi
-      - name: tsdb_k8s_queries tests
-        run: |
-          if [ "${{ steps.changes.outputs.tsdb_k8s_queries }}" = "true" ]; then
-            echo "Running tsdb_k8s_queries tests..."
-          fi
-      - name: wikipedia tests
-        run: |
-          if [ "${{ steps.changes.outputs.wikipedia }}" = "true" ]; then
-            echo "Running wikipedia tests..."
-          fi
+          TRACKS=$(python3 .github/get_tracks.py .github/filters.yml)
+          echo "tracks=$TRACKS" >> $GITHUB_OUTPUT
 
+      - name: "Run tests"
+        run: hatch -v -e it run test --track-filter=${{ steps.track_filter.outputs.tracks }}
