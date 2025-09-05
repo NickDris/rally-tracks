@@ -55,11 +55,14 @@ test_operator = "pytest -s it_serverless --log-cli-level=INFO --operator"
 
 [tool.pytest.ini_options]
 # set to true for more verbose output of tests
-log_cli = false
+log_cli = true
 addopts = "--verbose --color=yes --ignore=it --ignore=it_serverless"
 junit_family = "xunit2"
 junit_logging = "all"
 asyncio_mode = "strict"
+markers = [
+    'track(name): associate a test with a list of tracks (Usage: @pytest.mark.track(["track1", "track2"]))'
+]
 
 [tool.black]
 line-length = 140
