@@ -21,14 +21,14 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: "Install dependencies"
         run: python -m pip install .[develop]
-      - name: Parse tracks from repo
-        run: python3 .github/scripts/create-filter.py
+      - name: Parse repo and create filters.yml
+        run: python3 .github/scripts/track-filter.py
       - uses: dorny/paths-filter@v3
         id: changes
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           filters: .github/filters.yml
-      - name: Build track filter list from changed tracks
+      - name: Collect changed tracks for --track-filter argument
         id: track_filter
         run: |
           for output in ${{ toJSON(steps.changes.outputs) }}
