@@ -44,18 +44,18 @@ extra-dependencies = [
 ]
 
 [tool.hatch.envs.unit.scripts]
-test = "pytest"
+test = "pytest {args}"
 
 [tool.hatch.envs.it.scripts]
-test = "pytest it --log-cli-level=INFO"
+test = "pytest it --log-cli-level=INFO {args}"
 
 [tool.hatch.envs.it_serverless.scripts]
-test_user = "pytest -s it_serverless --log-cli-level=INFO"
-test_operator = "pytest -s it_serverless --log-cli-level=INFO --operator"
+test_user = "pytest -s it_serverless --log-cli-level=INFO {args}"
+test_operator = "pytest -s it_serverless --log-cli-level=INFO --operator {args}"
 
 [tool.pytest.ini_options]
 # set to true for more verbose output of tests
-log_cli = true
+log_cli = false
 addopts = "--verbose --color=yes --ignore=it --ignore=it_serverless"
 junit_family = "xunit2"
 junit_logging = "all"
