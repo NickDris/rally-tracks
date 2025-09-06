@@ -31,13 +31,12 @@ jobs:
       - name: Collect changed tracks for --track-filter argument
         id: track_filter
         run: |
-          for output in ${{ toJSON(steps.changes.outputs) }}
-          do
-            if [ "$output" = "true" ]; then
-              TRACKS="$TRACKS,$track"
-            fi
-          done
-          TRACKS="${TRACKS#,}"  # Remove leading comma
+          TRACKS=$(echo '${{ toJSON(steps.changes.outputs) }}' | jq -r '
+            to_entries
+            | map(select(.value == "true"))
+            | map(.key)
+            | join(",")
+          ')
           echo "tracks=$TRACKS" >> $GITHUB_OUTPUT
       - name: "Run tests for tracks: ${{ steps.track_filter.outputs.tracks }}"
         run: hatch -v -e it run test --track-filter="${{ steps.track_filter.outputs.tracks }}"

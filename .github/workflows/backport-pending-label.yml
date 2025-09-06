@@ -6,6 +6,7 @@ on:
 
 jobs:
   add-backport-label:
+    # TODO: Don't run job if already has label "backport-pending"
     name: Add backport-pending label
     runs-on: ubuntu-latest
     permissions:
