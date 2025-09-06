@@ -21,28 +21,23 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: "Install dependencies"
         run: python -m pip install .[develop]
-      - name: Dynamically parse tracks
-        run: |
-          python3 <<EOF
-          import os, yaml
-          exclude = set(os.environ.get('EXCLUDE_FOLDERS', '').split(','))
-          filters = {}
-          for entry in os.listdir('.'):
-              if os.path.isdir(entry) and entry not in exclude:
-                  filters[entry] = [f"{entry}/**"]
-          with open('.github/filters.yml', 'w') as f:
-              yaml.dump(filters, f, default_flow_style=False)
-          EOF
+      - name: Parse repo and create filters.yml
+        run: python3 .github/scripts/track-filter.py
       - uses: dorny/paths-filter@v3
         id: changes
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           filters: .github/filters.yml
-      - name: Build track filter list
+      - name: Collect changed tracks for --track-filter argument
         id: track_filter
         run: |
-          TRACKS=$(python3 .github/get_tracks.py .github/filters.yml)
+          for output in ${{ toJSON(steps.changes.outputs) }}
+          do
+            if [ "$output" = "true" ]; then
+              TRACKS="$TRACKS,$track"
+            fi
+          done
+          TRACKS="${TRACKS#,}"  # Remove leading comma
           echo "tracks=$TRACKS" >> $GITHUB_OUTPUT
-
-      - name: "Run tests"
-        run: hatch -v -e it run test --track-filter=${{ steps.track_filter.outputs.tracks }}
+      - name: "Run tests for tracks: ${{ steps.track_filter.outputs.tracks }}"
+        run: hatch -v -e it run test --track-filter="${{ steps.track_filter.outputs.tracks }}"
