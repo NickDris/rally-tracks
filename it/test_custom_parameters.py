@@ -19,6 +19,7 @@ import pytest
 
 pytest_rally = pytest.importorskip("pytest_rally")
 
+
 class TestCustomParameters:
     @pytest.mark.track("tsdb")
     def test_tsdb_esql(self, es_cluster, rally):
