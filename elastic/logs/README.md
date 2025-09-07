@@ -1,5 +1,5 @@
 # Elastic Logs Track
-
+# Test 3
 This track simulates logging workloads.
 
 The track supports the following functionality:
