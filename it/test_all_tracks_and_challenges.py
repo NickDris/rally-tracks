@@ -48,4 +48,3 @@ class TestTrackRepository:
             assert ret == 0
         else:
             pytest.skip(msg=f"{track}-{challenge} filtered or included in skip list")
-
