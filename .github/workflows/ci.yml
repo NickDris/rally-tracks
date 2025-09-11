@@ -116,7 +116,7 @@ jobs:
       - run: echo "JAVA11_HOME=$JAVA_HOME_11_X64" >> $GITHUB_ENV
       - name: "Install dependencies"
         run: python -m pip install .[develop]
-      - name: "Run tests"
+      - name: "Run tests (${{ needs.filter-pr-changes.outputs.tracks }})"
         run: hatch -v -e it run test --track-filter="${{ needs.filter-pr-changes.outputs.tracks }}"
         timeout-minutes: 120
         env:
