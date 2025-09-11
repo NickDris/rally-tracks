@@ -4,7 +4,7 @@
   "description": "Metricbeat data",
   "indices": [
     {
-      "name": "metricbeat",
+      "name": "metricbeat-test",
       "body": "index.json"
     }
   ],
