@@ -4,7 +4,7 @@ This track benchmarks the dataset from [Cohere/miracl-en-corpus-22-12](https://h
 
 Given the size of this dataset 32.8M documents with 768 dimension vectors you
 need a cluster with at least 103GB of total RAM available to run performant HNSW queries.
-
+# tests 
 ### Generating the document dataset
 
 To rebuild the dataset run the following commands:
