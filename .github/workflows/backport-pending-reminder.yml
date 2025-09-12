@@ -1,0 +1,36 @@
+name: Backport-pending daily reminders
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  # Allows triggering the job manually
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write         # to post comments
+  pull-requests: write  # to read PR info + access reviewers
+
+env:
+  TARGET_BRANCH: "master"
+  REMIND_EVERY_DAYS: "7" 
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Run reminder
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_BRANCH: ${{ env.TARGET_BRANCH }}
+          REMIND_EVERY_DAYS: ${{ env.REMIND_EVERY_DAYS }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python .github/scripts/backport-reminder.py

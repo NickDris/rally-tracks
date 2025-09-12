@@ -1,0 +1,26 @@
+name: Add backport-pending label
+
+on:
+  pull_request_target:
+      branches: ['master']
+
+jobs:
+  add-backport-label:
+    # TODO: Don't run job if already has label "backport-pending"
+    name: Add backport-pending label
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add label with gh CLI
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-label "backport-pending"  
+      
+      # First comment on the PR to inform about backporting and then let the reminder fire off.
+      - name: Add backport-pending label description
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "The `backport-pending` label indicates that this pull request requires backporting. Please review next steps for backporting."

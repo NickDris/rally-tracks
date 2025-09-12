@@ -23,6 +23,7 @@ pytest_rally = pytest.importorskip("pytest_rally")
 
 
 class TestLogsUnmapped:
+    @pytest.mark.track("elastic/logs")
     def test_logs_chicken(self, es_cluster, rally):
         custom = {"mapping": "unmapped"}
         ret = rally.race(

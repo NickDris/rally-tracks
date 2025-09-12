@@ -4,7 +4,7 @@ on:
   pull_request_target:
     branches: ['master']
     types: ["labeled", "closed"]
-
+# test
 jobs:
   backport:
     name: Backport PR
@@ -25,4 +25,4 @@ jobs:
         
       - name: Debug log
         if: ${{ failure() }}
-        run: cat ~/.backport/backport.debug.log 
+        run: cat ~/.backport/backport.debug.log
