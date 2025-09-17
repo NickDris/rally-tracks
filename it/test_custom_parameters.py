@@ -29,6 +29,7 @@ class TestCustomParameters:
         )
         assert ret == 0
 
+    @pytest.mark.track("tsdb")
     def test_tsdb_data_stream(self, es_cluster, rally):
         ret = rally.race(
             track="tsdb",
