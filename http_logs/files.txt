@@ -12,3 +12,4 @@ documents-211998-1k.json.bz2
 documents-221998-1k.json.bz2
 documents-231998-1k.json.bz2
 documents-241998-1k.json.bz2
+casac
