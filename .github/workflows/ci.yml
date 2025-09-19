@@ -84,7 +84,7 @@ jobs:
         id: es_revision
         run: echo "revision=$(cat es-revision)" >> $GITHUB_OUTPUT
       - name: "Run tests"
-        run: hatch -v -e unit run test --track-filter="${{ needs.filter-pr-changes.outputs.tracks }}" --revision="${{ steps.es_revision.outputs.revision }}"
+        run: hatch -v -e unit run test --track-filter=${{ needs.filter-pr-changes.outputs.tracks }} --revision=${{ steps.es_revision.outputs.revision }}
       - uses: elastic/es-perf-github-status@v2
         if: ${{ failure() && ( github.event_name == 'schedule' || ( github.event_name == 'push' && github.ref_name == env.DEFAULT_BRANCH ) ) }}
         with:
@@ -121,7 +121,7 @@ jobs:
         id: es_revision
         run: echo "revision=$(cat es-revision)" >> $GITHUB_OUTPUT
       - name: "Run tests (${{ needs.filter-pr-changes.outputs.tracks }})"
-        run: hatch -v -e it run test --track-filter="${{ needs.filter-pr-changes.outputs.tracks }}" --revision="${{ steps.es_revision.outputs.revision }}"
+        run: hatch -v -e it run test --track-filter=${{ needs.filter-pr-changes.outputs.tracks }} --revision=${{ steps.es_revision.outputs.revision }}
         timeout-minutes: 120
         env:
           # elastic/endpoint fetches assets from GitHub, authenticate to avoid
