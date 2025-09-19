@@ -5,7 +5,6 @@ import yaml
 # static file paths should be a comma-separated list of files or directories
 static_paths = os.environ.get("RUN_FULL_CI_WHEN_CHANGED", [])
 
-static_paths = ".github"
 filters = {}
 
 # Statically include some files that should always trigger a full CI run
