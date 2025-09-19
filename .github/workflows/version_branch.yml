@@ -1,0 +1,45 @@
+name: Version Branch Edit
+
+on: 
+  create:
+
+jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      version_branch: ${{ steps.check_branch.outputs.version_branch }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if branch is major.minor
+        id: check_branch
+        run: |
+          if [[ "${GITHUB_REF##*/}" =~ ^[0-9]{1,3}(\.[0-9]{1,3})?$ ]]; then
+            echo "version_branch=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          fi
+
+  update-es-revision:
+    runs-on: ubuntu-latest
+    needs: check-branch
+    if: needs.check-branch.outputs.version_branch
+    steps:
+      - uses: actions/checkout@v4
+      - name: Overwrite es-revision
+        run: echo "${{ needs.check-branch.outputs.version_branch }}" > es-revision
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add es-revision
+          git commit -m "Update es-revision for branch ${{ needs.check-branch.outputs.version_branch }}"
+          git push origin HEAD:${GITHUB_REF##*/}
+
+  create-version-label:
+    runs-on: ubuntu-latest
+    needs: check-branch
+    if: needs.check-branch.outputs.version_branch
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create label vX.Y
+        run: gh label create "v${{ needs.check-branch.outputs.version_branch }}" --description "Version branch label" --color "#75777aff"
