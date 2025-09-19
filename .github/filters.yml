@@ -12,7 +12,7 @@ cohere_vector:
 - cohere_vector/**
 dense_vector:
 - dense_vector/**
-elastic:
+elastic:asdqwcqw
 - elastic/**
 elser-ingest-speedtest:
 - elser-ingest-speedtest/**
