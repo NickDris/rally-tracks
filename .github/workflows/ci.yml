@@ -75,6 +75,7 @@ jobs:
         id: set-es-revision
         run: |
           ES_REVISION="--revision=$(cat es-revision)"
+          echo "Will test with $ES_REVISION"
           echo "es_revision=$ES_REVISION" >> $GITHUB_OUTPUT
 
   test:
