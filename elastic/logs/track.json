@@ -29,6 +29,20 @@
 
 {% set p_recovery_max_bytes_per_sec = (recovery_max_bytes_per_sec | default(-1)) %}
 {% set p_node_concurrent_recoveries = (node_concurrent_recoveries | default(2)) %}
+
+{% set p_esql_ccs_skip_remote_clusters = (esql_ccs_skip_remote_clusters | default(true)) %}
+{% if p_esql_ccs_skip_remote_clusters %}
+  {% set p_esql_target_prefix = "" %}
+{% else %}
+  {% set p_esql_target_prefix = "remote*:" %}
+{% endif %}
+{% set p_esql_ccs_include_local_snapshot = (esql_ccs_include_local_snapshot | default(not p_esql_ccs_skip_remote_clusters)) %}
+{% set p_esql_ccs_include_local_snapshot_restore = (esql_ccs_include_local_snapshot_restore | default(false)) %}
+{% set p_esql_ccs_scaling_queries = (esql_ccs_scaling_queries | default(false)) %}
+{% set p_esql_ccs_extra_body = (esql_ccs_extra_body | default("")) %}
+{% set p_esql_ccs_local_nodes_count = (esql_ccs_local_nodes_count | default(0)) %}
+{% set p_esql_ccs_remote_nodes_count = (esql_ccs_remote_nodes_count | default(0)) %}
+
 {% set p_snapshot_repo_name = (snapshot_repo_name | default("logging")) %}
 {% set p_snapshot_repo_type = (snapshot_repo_type | default("s3")) %}
 {% set p_snapshot_repo_settings = (snapshot_repo_settings | default({
@@ -45,10 +59,21 @@
 {% set p_dsl_poll_interval = (dsl_poll_interval | default(false) ) %}
 {% set p_dsl_default_rollover = (dsl_default_rollover | default(false) ) %}
 {% set p_skip_fleet_globals = (skip_fleet_globals | default(false) ) %}
+{% set p_reindex_max_concurrent_indices = (reindex_max_concurrent_indices | default(1) ) %}
+{% set p_reindex_max_requests_per_second = (reindex_max_requests_per_second | default(1000) ) %}
+
+{% set p_recovery_target = (recovery_target | default('logs-k8-application.log-default') ) %}
+{% set p_recovery_from_seq_no = (recovery_seq_no | default(0) ) %}
+{% set p_recovery_small_max_batch_size = (recovery_small_max_batch_size | default ("512kB") ) %}
+{% set p_recovery_large_max_batch_size = (recovery_large_max_batch_size | default ("32MB") ) %}
+{% set p_recovery_poll_timeout = (recovery_poll_timeout | default("1m")) %}
+{% set p_recovery_max_operations_count = (recovery_max_operations_count | default(16777216)) %}
 
 {% set p_worker_threads_enabled = (worker_threads_enabled | default(true))  %}
 
 {% set es_version = "7.13.2" %}
+
+{% set p_mapping = ( mapping | default('mapped') ) %}
 
 {% set p_integration_ratios = (integration_ratios | default({
     "kafka": {
@@ -192,21 +217,25 @@
     },
     {
       "name": "logs-redis.slowlog-default"
+    },
+    {
+      "name": "logs"
     }
   ],
   "component-templates": [
-    {
-        "name": ".fleet_agent_id_verification-1",
-        "template": "./templates/component/.fleet_agent_id_verification-1.json",
-        "template-path": "component_template"
+    {% if p_mapping == "mapped" %}
+    {% if build_flavor != "serverless" %}
+      {
+          "name": ".fleet_agent_id_verification-1",
+          "template": "./templates/component/.fleet_agent_id_verification-1.json",
+          "template-path": "component_template"
 
-    },
-    {% if p_skip_fleet_globals == false %}
-    {
-        "name": ".fleet_globals-1",
-        "template": "./templates/component/.fleet_globals-1.json",
-        "template-path": "component_template"
-    },
+      },
+      {
+          "name": ".fleet_globals-1",
+          "template": "./templates/component/.fleet_globals-1.json",
+          "template-path": "component_template"
+      },
     {% endif %}
     {
         "name": "logs-apache.access@package",
@@ -316,6 +345,12 @@
         "name": "logs-system.syslog@custom",
         "template": "./templates/component/logs-system.syslog@custom.json"
     },
+    {% endif %}
+    {
+      "name": "logs@stream.layer",
+      "template": "./templates/component/logs@stream.layer.json",
+      "template-path": "component_template"
+    },
     {
         "name": "track-custom-mappings",
         "template": "./templates/component/track-custom-mappings.json"
@@ -338,6 +373,7 @@
     }
   ],
   "composable-templates": [
+    {% if p_mapping == "mapped" %}
     {
         "name": "logs-kafka.log",
         "index-pattern": "logs-kafka.log-*",
@@ -445,6 +481,23 @@
         "index-pattern": "auditbeatquantitative-*",
         "delete-matching-indices": false,
         "template": "./templates/composable/auditbeat-quantitative.json"
+    },
+    {% endif %}
+    {% if p_mapping == "unmapped" %}
+    {
+        "name": "logs-unmapped",
+        "index-pattern": "logs-*-*",
+        "delete-matching-indices": false,
+        "template": "./templates/composable/logs-dynamic-false.json",
+        "template-path": "index_template"
+    },
+    {% endif %}
+    {
+      "name": "logs@stream",
+      "index-pattern": "logs",
+      "delete-matching-indices": false,
+      "template": "./templates/composable/logs@stream.json",
+      "template-path": "index_template"
     }
   ],
   "corpora": [

@@ -83,6 +83,15 @@ The following parameters are available:
 
 * `wait_for_status` (default: `green`) - The track creates Data Streams prior to indexing. All created Data Streams must at least reach this status before indexing commences. Reduce to `yellow` for clusters where green isn't possible e.g. single node.
 * `corpora_uri_base` (default: `https://rally-tracks.elastic.co`) - Specify the base location of the datasets used by this track.
+* `index_mode` (default: unset) - A parameter meant to be used internally which defines one of the available indexing modes, "standard", "logsdb" or "time_series". If not set, "standard" is used.
+* `synthetic_source_keep` (default: unset): If specified, configures the `index.mapping.synthetic_source_keep` index setting.
+* `source_mode` (default: unset) - Specifies the source mode to be used.
+* `use_synthetic_source_recovery` (default: unset): Whether synthetic recovery source will be used.
+* `recovery_target` (required) - The target index or data stream for fetching shard changes via the recovery API.
+* `recovery_from_seq_no` (default: `0`) - The sequence number from which to start fetching translog operations.
+* `recovery_poll_timeout` (default: `1m`) - The maximum time to wait for additional translog operations before returning an empty result.
+* `recovery_max_batch_size` (default: `32MB`) - The maximum estimated size for the batch of translog operations to return.
+* `recovery_max_operations_count` (default: `1048576`) - The maximum number of translog operations to return in a single batch.
 
 ### Data Generation Parameters
 
@@ -99,7 +108,9 @@ The following parameters are available:
 * `number_of_replicas` (default: 1) - The number of replicas to set per Data Stream. The same value is used for all Data Streams.
 * `bulk_indexing_clients` (default: 8) - The number of clients issuing indexing requests.
 * `bulk_size` (default: 50) - The number of documents to send per indexing request.
-* `force_merge_max_num_segments` (default: unset): An integer specifying the max amount of segments the force-merge operation should use. Only supported in `security-indexing-querying` track.
+* `force_merge_max_num_segments` (default: unset): An integer specifying the max amount of segments the force-merge operation should use. Only supported in `security-indexing-querying` track. 
+* `logs_endpoint_from_kibana` (default: false): Skip creation of endpoint templates. Used when templates are expected from kibana. 
+* `include_non_serverless_index_settings` (default: true for non-serverless clusters, false for serverless clusters): Whether to include non-serverless index settings.
 
 ### Querying parameters
 

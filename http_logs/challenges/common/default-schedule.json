@@ -44,7 +44,9 @@
         {
           "operation": {
             "operation-type": "force-merge",
-            "request-timeout": 7200
+            "request-timeout": 7200{%- if force_merge_max_num_segments is defined %},
+            "max-num-segments": {{ force_merge_max_num_segments | tojson }}
+            {%- endif %}
           }
         },
         {
@@ -121,7 +123,7 @@
         { "operation": "200s-in-range", "name": "200s-in-range-from-source-using-index-of",   "warmup-iterations": 100, "iterations": 100, "target-throughput": 5,   "tags": ["200s-in-range", "from-source",   "using-index-of"] },
         { "operation": "200s-in-range", "name": "200s-in-range-from-keyword-using-index-of",  "warmup-iterations": 100, "iterations": 100, "target-throughput": 5,   "tags": ["200s-in-range", "from-keyword",  "using-index-of"] },
         { "operation": "200s-in-range", "name": "200s-in-range-from-wildcard-using-index-of", "warmup-iterations": 100, "iterations": 100, "target-throughput": 5,   "tags": ["200s-in-range", "from-wildcard", "using-index-of"] },
-        { "operation": "400s-in-range", "name": "400s-in-range-from-source-using-grok",       "warmup-iterations": 100, "iterations": 100, "target-throughput": 0.3, "tags": ["400s-in-range", "from-source",   "using-grok"] },
+        { "operation": "400s-in-range", "name": "400s-in-range-from-source-using-grok",       "warmup-iterations": 100, "iterations": 100, "target-throughput": 0.2, "tags": ["400s-in-range", "from-source",   "using-grok"] },
         { "operation": "400s-in-range", "name": "400s-in-range-from-keyword-using-grok",      "warmup-iterations": 100, "iterations": 100, "target-throughput": 0.3, "tags": ["400s-in-range", "from-keyword",  "using-grok"] },
         { "operation": "400s-in-range", "name": "400s-in-range-from-wildcard-using-grok",     "warmup-iterations": 100, "iterations": 100, "target-throughput": 0.3, "tags": ["400s-in-range", "from-wildcard", "using-grok"] },
         { "operation": "400s-in-range", "name": "400s-in-range-from-source-using-dissect",    "warmup-iterations": 100, "iterations": 100, "target-throughput": 0.5, "tags": ["400s-in-range", "from-source",   "using-dissect"] },
@@ -167,13 +169,13 @@
           "operation": "asc_sort_timestamp",
           "warmup-iterations": 200,
           "iterations": 100,
-          "target-throughput": 20
+          "target-throughput": 2.7
         },
         {
           "operation": "desc_sort_with_after_timestamp",
           "warmup-iterations": 10,
           "iterations": 100,
-          "target-throughput": 1
+          "target-throughput": 0.6
         },
         {
           "operation": "asc_sort_with_after_timestamp",
@@ -194,6 +196,26 @@
           "target-throughput": 2
         },
 {%- if not runtime_fields is defined %}
+        {
+          "operation": "sort_size_desc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
+        {
+          "operation": "sort_size_asc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
+        {
+          "operation": "sort_status_desc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
+        {
+          "operation": "sort_status_asc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
         {
           "operation": "sort_keyword_can_match_shortcut",
           "warmup-iterations": 200,
@@ -256,19 +278,45 @@
           "operation": "asc_sort_timestamp",
           "warmup-iterations": 200,
           "iterations": 100,
-          "target-throughput": 50
+          "target-throughput": 1.6
         },
         {
           "name": "desc-sort-with-after-timestamp-after-force-merge-1-seg",
           "operation": "desc_sort_with_after_timestamp",
           "warmup-iterations": 10,
           "iterations": 100,
-          "target-throughput": 1
-        },
+          "target-throughput": 0.7
+        },       
         {
           "name": "asc-sort-with-after-timestamp-after-force-merge-1-seg",
           "operation": "asc_sort_with_after_timestamp",
           "warmup-iterations": 10,
           "iterations": 100,
-          "target-throughput": 0.5
+          "target-throughput": 0.3
         }
+{%- if not runtime_fields is defined %},         
+        {
+          "name": "sort-size-desc-after-force-merge-1-seg",
+          "operation": "sort_size_desc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
+        {
+          "name": "sort-size-asc-after-force-merge-1-seg",
+          "operation": "sort_size_asc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
+        {
+          "name": "sort-status-desc-after-force-merge-1-seg",
+          "operation": "sort_status_desc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        },
+        {
+          "name": "sort-status-asc-after-force-merge-1-seg",
+          "operation": "sort_status_asc",
+          "warmup-iterations": 200,
+          "iterations": 100
+        }
+{%- endif %}        

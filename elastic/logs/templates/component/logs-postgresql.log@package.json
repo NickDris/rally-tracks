@@ -7,6 +7,19 @@
           {%- if disable_pipelines is not true %}
           "default_pipeline": "logs-postgresql.log-1.20.0",
           {%- endif %}
+          {% if route_on_sort_fields | default(false) is true %}
+          "sort": {
+            "field": [ "host.name", "error.code", "event.code", "@timestamp" ],
+            "order": [ "asc", "asc", "asc", "desc" ]
+          },
+          "logsdb.route_on_sort_fields": true,
+          {% endif %}
+          {% if patterned_text_message_field | default(false) is true %}
+          "sort": {
+            "field": [ "host.name", "message.template_id", "@timestamp" ],
+            "order": [ "asc", "asc", "desc" ]
+          },
+          {% endif %}
           "mapping": {
             "total_fields": {
               "limit": "10000"
@@ -129,7 +142,12 @@
             }
           },
           "message": {
+            {% if patterned_text_message_field | default(false) is true %}
+            "type": "pattern_text",
+            "index_options": {{ patterned_text_index_options | default("docs") | tojson }}
+            {% else %}
             "type": "match_only_text"
+            {% endif %}
           },
           "error": {
             "properties": {
@@ -142,7 +160,12 @@
                 "type": "keyword"
               },
               "message": {
+                {% if patterned_text_message_field | default(false) is true %}
+                "type": "pattern_text",
+                "index_options": {{ patterned_text_index_options | default("docs") | tojson }}
+                {% else %}
                 "type": "match_only_text"
+                {% endif %}
               }
             }
           },

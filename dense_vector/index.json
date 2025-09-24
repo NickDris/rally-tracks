@@ -2,16 +2,13 @@
   "settings": {
     "index": {
       {# non-serverless-index-settings-marker-start #}{%- if build_flavor != "serverless" or serverless_operator == true -%}
-      "number_of_shards": 2,
-      "number_of_replicas": {{number_of_replicas | default(0)}}
+      "number_of_shards": {{ number_of_shards | default(2) }},
+      "number_of_replicas": {{ number_of_replicas | default(0) }}
       {%- endif -%}{# non-serverless-index-settings-marker-end #}
     }
   },
   "mappings": {
     "dynamic": "strict",
-    "_source": {
-      "enabled": false
-    },
     "properties": {
       "vector": {
         "type": "dense_vector",
@@ -19,7 +16,7 @@
         "index" : true,
         "similarity": "dot_product",
         "index_options": {
-          "type": {{ vector_index_type | default("hnsw") | tojson }},
+          "type": {{ vector_index_type | default("int8_hnsw") | tojson }},
           "m": 32,
           "ef_construction": 100
         }

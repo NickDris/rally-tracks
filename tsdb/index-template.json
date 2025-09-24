@@ -1,6 +1,8 @@
 {% import "rally.helpers" as rally with context %}
 {# TODO By default, source_mode should be "synthetic" if index_mode == "time_series" else "stored" #}
 {% set p_source_mode = (source_mode | default("synthetic")) %}
+{% set p_include_source_mode = (include_source_mode | default(true)) %}
+{% set p_index_mode = (index_mode | default("time_series")) %}
 {
   "index_patterns": ["k8s*"],
   "data_stream": {},
@@ -16,31 +18,30 @@
         "refresh_interval": "{{refresh_interval}}",
         {% endif %}
         "codec": "{{codec | default('default')}}",
-        "mode": "{{index_mode | default('time_series')}}",
-        {% if index_mode | default('time_series') is equalto 'time_series' %}
-        "routing_path": [
-          "metricset.name",
-          "kubernetes.container.name",
-          "kubernetes.event.involved_object.uid",
-          "kubernetes.node.name",
-          "kubernetes.system.container.id",
-          "kubernetes.volume.name"
-        ],
+        {% if p_index_mode == "time_series" or p_index_mode == "logsdb" %}
+        "mode": "{{p_index_mode}}",
+        {% endif %}
+        {% if p_index_mode == "time_series" %}
         "time_series": {
           "start_time": "2021-04-28T00:00:00.000Z",
           "end_time": "2021-05-01T00:00:00.000Z"
         },
         {% endif %}
-        "mapping.total_fields.limit": 10000
+        "mapping": {
+          {% if synthetic_source_keep %}
+          "synthetic_source_keep": "{{synthetic_source_keep}}",
+          {% endif %}
+          "total_fields.limit": 10000
+          {% if p_include_source_mode %},
+          "source.mode": {{ p_source_mode | tojson }}
+          {% endif %}
+        }
       }
     },
     "mappings": {
       "_meta": {
         "beat": "metricbeat",
         "version": "7.6.2"
-      },
-      "_source": {
-        "mode": {{ p_source_mode | tojson }}
       },
       "dynamic_templates": [
         {

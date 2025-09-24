@@ -5,26 +5,37 @@
   "template": {
     "settings": {
       "index": {
-        "codec": "best_compression",
         "mapping": {
           "total_fields": {
             "limit": "10000"
           }
         },
-        {# non-serverless-index-settings-marker-start #}{%- if build_flavor != "serverless" or serverless_operator == true -%}
-        "number_of_routing_shards": "30",
-        "number_of_shards": "{{ number_of_shards | default(1) }}",
-        "number_of_replicas": "{{ number_of_replicas | default(1) }}",
-        {%- endif -%}{# non-serverless-index-settings-marker-end #}
         "query": {
           "default_field": [
             "message"
           ]
-        },
-        {%- if disable_pipelines is not true %}
-        "default_pipeline": "logs-k8-app",
+        }
+        {#- non-serverless-index-settings-marker-start #}
+        {%- if build_flavor != "serverless" or serverless_operator == true %},
+        "number_of_routing_shards": "30"
         {%- endif %}
-        "refresh_interval": "5s"
+        {#- non-serverless-index-settings-marker-end #}
+        {%- if disable_pipelines is not true %},
+        "default_pipeline": "logs-k8-app"
+        {%- endif %}
+        {%- if route_on_sort_fields | default(false) is true %},
+        "sort": {
+          "field": [ "host.name", "event.code", "log.file.path", "@timestamp" ],
+          "order": [ "asc", "asc", "asc", "desc" ]
+        },
+        "logsdb.route_on_sort_fields": true
+        {% endif %}
+        {% if patterned_text_message_field | default(false) is true %},
+        "sort": {
+          "field": [ "host.name", "message.template_id", "@timestamp" ],
+          "order": [ "asc", "asc", "desc" ]
+        }
+        {% endif %}
       }
     },
     "mappings": {
@@ -1812,7 +1823,12 @@
           }
         },
         "message": {
+          {% if patterned_text_message_field | default(false) is true %}
+          "type": "pattern_text",
+          "index_options": {{ patterned_text_index_options | default("docs") | tojson }}
+          {% else %}
           "type": "match_only_text"
+          {% endif %}
         },
         "user": {
           "properties": {
@@ -1999,6 +2015,7 @@
   },
   "composed_of": [
     "logs-mappings",
+    "track-custom-shared-settings",
     "track-custom-mappings",
     "track-data-stream-lifecycle",
     "track-shared-logsdb-mode"

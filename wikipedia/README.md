@@ -16,13 +16,13 @@ Fields that do not have values have been left out.
 
 ### Generating the document dataset
 
-To regenerate the dataset from scratch, first download and unzip an archive
+To regenerate the dataset from scratch, first download an archive
 of Wikipedia dumps from [this link](https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles-multistream.xml.bz2) (~21GB).
 
 Then run this command:
 
 ```bash
-python _tools/parse_documents.py <path_to_xml_file> | pbzip2 -9 -k -m2000 > pages.json.bz2
+python _tools/parse_documents.py <path_to_xml_bz2_file> | pbzip2 -9 -k -m2000 > pages.json.bz2
 ```
 
 ### Generating clickstream probability distribution
@@ -73,6 +73,54 @@ This track accepts the following parameters with Rally 0.8.0+ using `--track-par
   - `parallel_indexing_search_time_period`: (default: `300`)
   - `parallel_indexing_search_warmup_time_period` (default: `10`)
   - `parallel_indexing_target_throughput`: (default: `100`)
+
+### Parameters for ingest-autoscale challenge
+
+- Initial indexing:
+  - `initial_ingest_clients` (default: 4)
+  - `initial_ingest_bulk_size` (default: 100)
+- Ingest Operations:
+  - `ingest_bulk_size` (default: 100)
+  - `as_warmup_time_periods` (default: [600,600,600,600,600])
+  - `as_time_periods` (default: [1800,1800,1800,1800,1800])
+  - `as_ingest_clients` (default: [1,2,4,8,16])
+  - `as_ingest_target_throughputs` (default: [-1,-1,-1,-1,-1])
+
+When `as_ingest_target_throughputs` is a positive number, the ingest throughput formula in documents per second is `ingest_bulk_size * as_ingest_target_throughputs`.
+
+### Parameters for search-autoscale challenge
+
+- Initial indexing:
+  - `initial_ingest_clients` (default: 4)
+  - `initial_ingest_bulk_size` (default: 100)
+- Search Operations:
+  - `search_size` (default: 10)
+  - `as_warmup_time_periods` (default: [600,600,600,600,600])
+  - `as_time_periods` (default: [1800,1800,1800,1800,1800])
+  - `as_search_clients` (default: [1,2,4,8,16])
+  - `as_search_target_throughputs` (default: [-1,-1,-1,-1,-1])
+
+When `as_search_target_throughputs` is a positive number, the search throughput formula in documents per second is `search_size * as_search_target_throughputs`.
+
+### Parameters for ingest-search-autoscale challenge
+
+- Initial indexing:
+  - `initial_ingest_clients` (default: 4)
+  - `initial_ingest_bulk_size` (default: 100)
+- Operations:
+  - `as_warmup_time_periods` (default: [600,600,600,600,600])
+  - `as_time_periods` (default: [1800,1800,1800,1800,1800])
+- Ingest Operations:
+  - `ingest_bulk_size` (default: 100)
+  - `as_ingest_clients` (default: [1,2,4,8,16])
+  - `as_ingest_target_throughputs` (default: [-1,-1,-1,-1,-1])
+- Search Operations:
+  - `search_size` (default: 10)
+  - `as_search_clients` (default: [1,2,4,8,16])
+  - `as_search_target_throughputs` (default: [-1,-1,-1,-1,-1])
+
+When `as_ingest_target_throughputs` is a positive number, the ingest throughput formula in documents per second is `ingest_bulk_size * as_ingest_target_throughputs`.
+When `as_search_target_throughputs` is a positive number, the search throughput formula in documents per second is `search_size * as_search_target_throughputs`.
 
 ### License
 

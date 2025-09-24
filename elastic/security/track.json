@@ -3,13 +3,19 @@
 {% set p_corpora_uri_base = (corpora_uri_base | default("https://rally-tracks.elastic.co")) %}
 {% set p_query_workflows = (query_workflows | default(["hosts", "overview", "network"])) %}
 {% set p_num_query_workflows = p_query_workflows | length %}
-{% set p_workflow_folder = workflow_folder | default('workflows') %}
 {% set p_workflow_time_interval = (workflow_time_interval | default(30)) %}
 {% set p_user_workflow_time = p_workflow_time_interval * p_num_query_workflows %}
 {% set p_bulk_indexing_clients = (bulk_indexing_clients | default(8))%}
 {% set p_number_of_shards = (number_of_shards | default(1)) %}
 {% set p_number_of_replicas = (number_of_replicas | default(1)) %}
 {% set p_skip_delete_component_template = (skip_delete_component_template | default(false) ) %}
+{% set p_logs_endpoint_from_kibana = (logs_endpoint_from_kibana | default(false) ) %}
+{% set p_recovery_from_seq_no = (recovery_seq_no | default(0) ) %}
+{% set p_recovery_target = ( recovery_target | default('filebeat-default') ) %}
+{% set p_recovery_max_batch_size = (recovery_max_batch_size | default ("32MB") ) %}
+{% set p_recovery_poll_timeout = (recovery_poll_timeout | default("1m")) %}
+{% set p_recovery_max_operations_count = (recovery_max_operations_count | default(1048576)) %}
+{% set p_include_non_serverless_index_settings = (include_non_serverless_index_settings | default(build_flavor != "serverless")) %}
 {% set p_integration_ratios = (integration_ratios | default({
     "auditbeat": {
       "corpora": {
@@ -51,7 +57,6 @@
     "wait-for-status": "{{ wait_for_status | default('green') }}",
     "force-data-generation": {{ force_data_generation | default(false) | tojson }},
     "detailed-results": {{ detailed_results | default(false) | tojson }},
-    "workflow-folder": {{ p_workflow_folder | default('workflows') | tojson }},
     "workflow-target": "{{ p_integration_ratios.keys() | list | join('-*,') ~ '-*' }}",
     "number-of-workflows": {{ p_num_query_workflows }},
     "raw-data-volume-per-day": "{{ raw_data_volume_per_day | default('0.1GB') }}",
@@ -94,6 +99,18 @@
 {% endif %}
 {% endfor %}
   ],
+  {% if p_logs_endpoint_from_kibana %}
+  "component-templates": [
+    {
+      "name": "track-shared-logsdb-mode",
+      "template": "./templates/component/track-shared-logsdb-mode.json"
+    },
+    {
+      "name": "track-custom-mappings",
+      "template": "./templates/component/track-custom-mappings.json"
+    }
+  ],
+  {% else %}
   "component-templates": [
     {
       "name": "track-shared-logsdb-mode",
@@ -110,38 +127,15 @@
       "template-path": "component_template"
     },
     {
-      "name": ".fleet_component_template-1",
-      "template": "./templates/component/.fleet_component_template-1.json"
-    },
-    {
       "name": ".fleet_globals-1",
       "template": "./templates/component/.fleet_globals-1.json",
       "template-path": "component_template"
     },
     {% endif %}
     {
-      "name": "logs-endpoint.events.file@mappings",
-      "template": "./templates/component/logs-endpoint.events.file@mappings.json"
-    },
-    {% if p_skip_delete_component_template == false %}
-    {
       "name": "logs-endpoint.events.file@package",
       "template": "./templates/component/logs-endpoint.events.file@package.json",
       "template-path": "component_template"
-    },
-    {% endif %}
-    {
-      "name": "logs-endpoint.events.file@settings",
-      "template": "./templates/component/logs-endpoint.events.file@settings.json"
-    },
-    {
-      "name": "logs-endpoint.events.file@custom",
-      "template": "./templates/component/logs-endpoint.events.file@custom.json",
-      "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.library@mappings",
-      "template": "./templates/component/logs-endpoint.events.file@mappings.json"
     },
     {
       "name": "logs-endpoint.events.library@package",
@@ -149,35 +143,9 @@
       "template-path": "component_template"
     },
     {
-      "name": "logs-endpoint.events.library@settings",
-      "template": "./templates/component/logs-endpoint.events.library@settings.json"
-    },
-    {
-      "name": "logs-endpoint.events.library@custom",
-      "template": "./templates/component/logs-endpoint.events.library@custom.json",
-      "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.network@mappings",
-      "template": "./templates/component/logs-endpoint.events.network@mappings.json"
-    },
-    {
       "name": "logs-endpoint.events.network@package",
       "template": "./templates/component/logs-endpoint.events.network@package.json",
       "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.network@settings",
-      "template": "./templates/component/logs-endpoint.events.network@settings.json"
-    },
-    {
-      "name": "logs-endpoint.events.network@custom",
-      "template": "./templates/component/logs-endpoint.events.network@custom.json",
-      "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.process@mappings",
-      "template": "./templates/component/logs-endpoint.events.process@mappings.json"
     },
     {
       "name": "logs-endpoint.events.process@package",
@@ -185,51 +153,17 @@
       "template-path": "component_template"
     },
     {
-      "name": "logs-endpoint.events.process@settings",
-      "template": "./templates/component/logs-endpoint.events.process@settings.json"
-    },
-    {
-      "name": "logs-endpoint.events.process@custom",
-      "template": "./templates/component/logs-endpoint.events.process@custom.json",
-      "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.security@mappings",
-      "template": "./templates/component/logs-endpoint.events.security@mappings.json"
-    },
-    {
-      "name": "logs-endpoint.events.security@package",
-      "template": "./templates/component/logs-endpoint.events.security@package.json",
-      "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.security@settings",
-      "template": "./templates/component/logs-endpoint.events.security@settings.json"
-    },
-    {
-      "name": "logs-endpoint.events.security@custom",
-      "template": "./templates/component/logs-endpoint.events.security@custom.json",
-      "template-path": "component_template"
-    },
-    {
-      "name": "logs-endpoint.events.registry@mappings",
-      "template": "./templates/component/logs-endpoint.events.registry@mappings.json"
-    },
-    {
       "name": "logs-endpoint.events.registry@package",
       "template": "./templates/component/logs-endpoint.events.registry@package.json",
       "template-path": "component_template"
     },
     {
-      "name": "logs-endpoint.events.registry@settings",
-      "template": "./templates/component/logs-endpoint.events.registry@settings.json"
-    },
-    {
-      "name": "logs-endpoint.events.registry@custom",
-      "template": "./templates/component/logs-endpoint.events.registry@custom.json",
+      "name": "logs-endpoint.events.security@package",
+      "template": "./templates/component/logs-endpoint.events.security@package.json",
       "template-path": "component_template"
     }
   ],
+  {% endif %}
   "composable-templates": [
 {% for integration in p_integration_ratios.keys() %}
 {% if integration == "logs-endpoint" %}
@@ -419,7 +353,9 @@
   ],
   "dependencies": [
     "geneve==0.2.0",
-    "pyyaml"
+    "pyyaml",
+    "elastic-transport==8.4.1",
+    "elasticsearch==8.6.1"
   ],
   "challenges": [
     {{ rally.collect(parts="challenges/*.json") }}
