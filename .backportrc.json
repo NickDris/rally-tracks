@@ -1,6 +1,6 @@
 {
   "upstream" : null,
-  "targetBranchChoices" : [ "8.18", "8.17", "8.15", "8.14", "8.13" ],
+  "targetBranchChoices" : [ "8.18", "8.17", "8.15", "8.14", "8.13", "8.3" ],
   "targetPRLabels" : [ "backport" ],
   "branchLabelMapping" : {
     "^backport-to-(.+)$" : "$1"
