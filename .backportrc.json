@@ -1,19 +1,14 @@
 {
+  "upstream" : null,
   "repoOwner": "elastic",
   "repoName": "rally-tracks",
-  "targetBranchChoices": [
-    "8.15",
-    "8.14",
-    "8.13"
-  ],
-  "targetPRLabels": [
-    "backport"
-  ],
+  "targetBranchChoices" : [ "8.18", "8.17", "8.15", "8.14", "8.13", "8.5", "8.3" ],
+  "targetPRLabels" : [ "backport" ],
   "branchLabelMapping": {
     "^v\\d{1,2}": "$1",
-    "^v\\d{1,2}.\\d{1,2}$": "$1"
+    "^v\\d{1,2}.\\d{1,2}$": "$1.$2"
   },
-  "autoMerge": true,
-  "autoMergeMethod": "squash",
-  "prDescription": "{defaultPrDescription}\n\n<!--BACKPORT {commits} BACKPORT-->"
+  "autoMerge" : true,
+  "autoMergeMethod" : "squash",
+  "prDescription" : "{defaultPrDescription}\n\n<!--BACKPORT {commits} BACKPORT-->"
 }
