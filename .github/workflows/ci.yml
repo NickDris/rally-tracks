@@ -52,7 +52,7 @@ jobs:
       - name: "Determine --revision value"
         id: revision
         run: |
-          echo "es_version=--revision=${{ steps.es-version.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "revision=--revision=${{ steps.es-version.outputs.version }}" >> $GITHUB_OUTPUT
 
   filter-pr-changes:
     runs-on: ubuntu-22.04
