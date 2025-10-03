@@ -45,7 +45,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: "Determine ES revision"
         run: |
-          echo "es_revision=--revision=$(cat es-revision)" >> $GITHUB_OUTPUT
+          ES_REVISION=$(cat es-revision)
+          echo "es_revision=--revision=$ES_REVISION" >> $GITHUB_OUTPUT
+          echo "Determined --revision value: $ES_REVISION"
 
   filter-pr-changes:
     runs-on: ubuntu-22.04
