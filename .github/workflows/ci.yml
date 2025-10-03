@@ -117,7 +117,7 @@ jobs:
   rally-tracks-compat:
     needs: 
       - filter-pr-changes
-      - determine-es-revision
+      - determine-revision
 
     strategy:
       fail-fast: false
