@@ -43,13 +43,13 @@ jobs:
       revision: ${{ steps.revision.outputs.revision }}
     steps:
       - uses: actions/checkout@v4
-      - name: "Determine ES version"
+      - name: "Get ES version"
         id: es-version
         run: |
           ES_VERSION=$(cat es-version)
-          echo "Determined es-version: $ES_VERSION"
+          echo "Found es-version: $ES_VERSION"
           echo "version=$ES_VERSION" >> $GITHUB_OUTPUT
-      - name: "Determine --revision value"
+      - name: "Define --revision argument"
         id: revision
         run: |
           echo "revision=--revision=${{ steps.es-version.outputs.version }}" >> $GITHUB_OUTPUT
