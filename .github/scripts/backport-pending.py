@@ -12,7 +12,6 @@ This script is idempotent: if the PR already has a version label (vX.Y) or alrea
 has the 'Backport pending' label, it exits without error.
 """
 from __future__ import annotations
-
 import json
 import os
 import re
