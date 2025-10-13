@@ -1,17 +1,5 @@
-
-
-#!/usr/bin/env python3
-"""Label a merged PR with 'Backport pending' if it has no version label.
-
-Expected environment:
-  GITHUB_EVENT_PATH: Path to the event JSON (GitHub sets this automatically)
-  GITHUB_REPOSITORY: owner/repo
-  GITHUB_TOKEN: token with repo:issues scope (use GITHUB_TOKEN or a PAT)
-
-This script is idempotent: if the PR already has a version label (vX.Y) or already
-has the 'Backport pending' label, it exits without error.
-"""
 from __future__ import annotations
+
 import json
 import os
 import re
@@ -21,15 +9,15 @@ import urllib.request
 from dataclasses import dataclass
 from typing import List
 
-VERSION_LABEL_RE = re.compile(r"^v\d+\.\d+$")
+VERSION_LABEL_RE = re.compile(r"^v\d{1,2}$|(^v\d{1,2}\.\d{1,2}$)")
 PENDING_LABEL = "Backport Pending"
+
 
 @dataclass
 class PRInfo:
     number: int
     labels: List[str]
     merged: bool
-
 
 def load_event() -> dict:
     path = os.environ.get("GITHUB_EVENT_PATH")
@@ -39,7 +27,6 @@ def load_event() -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 def extract_pr(event: dict) -> PRInfo | None:
     pr = event.get("pull_request")
     if not pr:
@@ -47,12 +34,10 @@ def extract_pr(event: dict) -> PRInfo | None:
     labels = [lbl.get("name", "") for lbl in pr.get("labels", [])]
     return PRInfo(number=pr["number"], labels=labels, merged=pr.get("merged", False))
 
-
 def needs_pending_label(info: PRInfo) -> bool:
     has_version_label = any(VERSION_LABEL_RE.match(l) for l in info.labels)
     has_pending = PENDING_LABEL in info.labels
     return info.merged and (not has_version_label) and (not has_pending)
-
 
 def add_label(pr_number: int, label: str) -> None:
     repo = os.environ.get("GITHUB_REPOSITORY")
@@ -83,7 +68,17 @@ def add_label(pr_number: int, label: str) -> None:
         print(f"::error::Unexpected error adding label: {e}", file=sys.stderr)
         sys.exit(1)
 
+"""
+Label a merged PR with 'Backport pending' if it has no version label.
 
+Expected environment:
+  GITHUB_EVENT_PATH: Path to the event JSON (GitHub sets this automatically)
+  GITHUB_REPOSITORY: owner/repo
+  GITHUB_TOKEN: token with repo:issues scope (use GITHUB_TOKEN or a PAT)
+
+This script is idempotent: if the PR already has a version label (vX.Y) or already
+has the 'Backport Pending' label, it exits without error.
+"""
 def main() -> int:
     event = load_event()
     if not event:
