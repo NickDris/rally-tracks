@@ -12,17 +12,18 @@ This script is idempotent: if the PR already has a version label (vX.Y) or alrea
 has the 'Backport pending' label, it exits without error.
 """
 from __future__ import annotations
+
 import json
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from typing import List
-import urllib.request
-import urllib.error
 
 VERSION_LABEL_RE = re.compile(r"^v\d+\.\d+$")
-PENDING_LABEL = "Backport pending"
+PENDING_LABEL = "Backport Pending"
 
 @dataclass
 class PRInfo:

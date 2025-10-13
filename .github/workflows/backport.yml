@@ -18,6 +18,11 @@ jobs:
         continue-on-error: true
         with:
           github_token: ${{ secrets.BACKPORT_TOKEN }}
+      
+      - name: Label PR if needed
+        run: python .github/scripts/backport-pending.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Info log
         if: ${{ success() }}
@@ -26,19 +31,3 @@ jobs:
       - name: Debug log
         if: ${{ failure() }}
         run: cat ~/.backport/backport.debug.log 
-
-  backport-pending:
-    name: Apply 'Backport Pending' label
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - name: Label PR if needed
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python .github/scripts/label_backport_pending.py
