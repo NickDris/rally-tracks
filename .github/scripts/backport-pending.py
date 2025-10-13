@@ -12,7 +12,6 @@ from typing import List
 VERSION_LABEL_RE = re.compile(r"^v\d{1,2}$|(^v\d{1,2}\.\d{1,2}$)")
 PENDING_LABEL = "Backport Pending"
 PENDING_LABEL_COLOR = "ffc600"
-PENDING_LABEL_DESC = "Awaiting backport to stable release branch"
 
 
 @dataclass
@@ -66,19 +65,15 @@ def add_label(pr_number: int, label: str) -> None:
                 sys.exit(1)
             print(f"Added label '{label}' to PR #{pr_number}")
     except urllib.error.HTTPError as e:
-        if e.code == 422:
-            # Possibly already labeled concurrently; treat as success
-            print(f"Label '{label}' already present or cannot add (422)")
-        else:
-            print(f"::error::HTTP error adding label: {e.code} {e.reason}", file=sys.stderr)
-            sys.exit(1)
+        print(f"::error::HTTP error adding label: {e.code} {e.reason}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"::error::Unexpected error adding label: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 def ensure_label(owner: str, repo_name: str, token: str) -> None:
-    """Create or update the Backport Pending label with desired color/description."""
+    """Create the Backport Pending label if it does not already exist."""
     label_api = f"https://api.github.com/repos/{owner}/{repo_name}/labels/{PENDING_LABEL.replace(' ', '%20')}"
     get_req = urllib.request.Request(label_api, method="GET")
     get_req.add_header("Authorization", f"Bearer {token}")
@@ -86,36 +81,12 @@ def ensure_label(owner: str, repo_name: str, token: str) -> None:
     try:
         with urllib.request.urlopen(get_req) as resp:
             if resp.status == 200:
-                # Update if color/description differ
-                data = json.loads(resp.read().decode())
-                needs_update = (data.get("color") != PENDING_LABEL_COLOR.lower()) or (data.get("description") != PENDING_LABEL_DESC)
-                if needs_update:
-                    patch_body = json.dumps(
-                        {
-                            "new_name": PENDING_LABEL,
-                            "color": PENDING_LABEL_COLOR,
-                            "description": PENDING_LABEL_DESC,
-                        }
-                    ).encode()
-                    patch_req = urllib.request.Request(label_api, data=patch_body, method="PATCH")
-                    patch_req.add_header("Authorization", f"Bearer {token}")
-                    patch_req.add_header("Accept", "application/vnd.github+json")
-                    with urllib.request.urlopen(patch_req) as presp:
-                        if presp.status not in (200,):
-                            print(f"::warning::Could not update label (status {presp.status})")
                 return
     except urllib.error.HTTPError as e:
-        if e.code != 404:
-            print(f"::warning::Failed to read existing label ({e.code})")
-    # Create the label
+        print(f"::warning::Failed to check label existence ({e.code})")
+        return
     create_api = f"https://api.github.com/repos/{owner}/{repo_name}/labels"
-    body = json.dumps(
-        {
-            "name": PENDING_LABEL,
-            "color": PENDING_LABEL_COLOR,
-            "description": PENDING_LABEL_DESC,
-        }
-    ).encode()
+    body = json.dumps({"name": PENDING_LABEL, "color": PENDING_LABEL_COLOR}).encode()
     req = urllib.request.Request(create_api, data=body, method="POST")
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("Accept", "application/vnd.github+json")
