@@ -85,6 +85,7 @@ This script is idempotent: if the PR already has a version label (vX.Y) or alrea
 has the 'Backport Pending' label, it exits without error.
 """
 
+
 def main() -> int:
     event = load_event()
     if not event:
@@ -98,6 +99,7 @@ def main() -> int:
     else:
         print("No label needed (either merged has version label or already pending)")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
