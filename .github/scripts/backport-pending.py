@@ -1,17 +1,5 @@
-
-
-#!/usr/bin/env python3
-"""Label a merged PR with 'Backport pending' if it has no version label.
-
-Expected environment:
-  GITHUB_EVENT_PATH: Path to the event JSON (GitHub sets this automatically)
-  GITHUB_REPOSITORY: owner/repo
-  GITHUB_TOKEN: token with repo:issues scope (use GITHUB_TOKEN or a PAT)
-
-This script is idempotent: if the PR already has a version label (vX.Y) or already
-has the 'Backport pending' label, it exits without error.
-"""
 from __future__ import annotations
+
 import json
 import os
 import re
@@ -21,8 +9,9 @@ import urllib.request
 from dataclasses import dataclass
 from typing import List
 
-VERSION_LABEL_RE = re.compile(r"^v\d+\.\d+$")
+VERSION_LABEL_RE = re.compile(r"^v\d{1,2}$|(^v\d{1,2}\.\d{1,2}$)")
 PENDING_LABEL = "Backport Pending"
+
 
 @dataclass
 class PRInfo:
@@ -84,6 +73,19 @@ def add_label(pr_number: int, label: str) -> None:
         sys.exit(1)
 
 
+"""
+Label a merged PR with 'Backport pending' if it has no version label.
+
+Expected environment:
+  GITHUB_EVENT_PATH: Path to the event JSON (GitHub sets this automatically)
+  GITHUB_REPOSITORY: owner/repo
+  GITHUB_TOKEN: token with repo:issues scope (use GITHUB_TOKEN or a PAT)
+
+This script is idempotent: if the PR already has a version label (vX.Y) or already
+has the 'Backport Pending' label, it exits without error.
+"""
+
+
 def main() -> int:
     event = load_event()
     if not event:
@@ -97,6 +99,7 @@ def main() -> int:
     else:
         print("No label needed (either merged has version label or already pending)")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
