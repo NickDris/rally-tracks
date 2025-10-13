@@ -11,6 +11,8 @@ from typing import List
 
 VERSION_LABEL_RE = re.compile(r"^v\d{1,2}$|(^v\d{1,2}\.\d{1,2}$)")
 PENDING_LABEL = "Backport Pending"
+PENDING_LABEL_COLOR = "ffc600"
+PENDING_LABEL_DESC = "Awaiting backport to stable release branch"
 
 
 @dataclass
@@ -45,11 +47,13 @@ def needs_pending_label(info: PRInfo) -> bool:
 
 def add_label(pr_number: int, label: str) -> None:
     repo = os.environ.get("GITHUB_REPOSITORY")
-    token = os.environ.get("GITHUB_TOKEN")
+    token = os.environ.get("label_token")
     if not repo or not token:
-        print("::error::Missing GITHUB_REPOSITORY or GITHUB_TOKEN", file=sys.stderr)
+        print("::error::Missing GITHUB_REPOSITORY or label_token", file=sys.stderr)
         sys.exit(1)
     owner, repo_name = repo.split("/", 1)
+    # First ensure the label exists (create or update color/description)
+    ensure_label(owner, repo_name, token)
     url = f"https://api.github.com/repos/{owner}/{repo_name}/issues/{pr_number}/labels"
     body = json.dumps({"labels": [label]}).encode()
     req = urllib.request.Request(url, data=body, method="POST")
@@ -73,13 +77,59 @@ def add_label(pr_number: int, label: str) -> None:
         sys.exit(1)
 
 
+def ensure_label(owner: str, repo_name: str, token: str) -> None:
+    """Create or update the Backport Pending label with desired color/description."""
+    label_api = f"https://api.github.com/repos/{owner}/{repo_name}/labels/{PENDING_LABEL.replace(' ', '%20')}"
+    get_req = urllib.request.Request(label_api, method="GET")
+    get_req.add_header("Authorization", f"Bearer {token}")
+    get_req.add_header("Accept", "application/vnd.github+json")
+    try:
+        with urllib.request.urlopen(get_req) as resp:
+            if resp.status == 200:
+                # Update if color/description differ
+                data = json.loads(resp.read().decode())
+                needs_update = (data.get("color") != PENDING_LABEL_COLOR.lower()) or (data.get("description") != PENDING_LABEL_DESC)
+                if needs_update:
+                    patch_body = json.dumps({
+                        "new_name": PENDING_LABEL,
+                        "color": PENDING_LABEL_COLOR,
+                        "description": PENDING_LABEL_DESC,
+                    }).encode()
+                    patch_req = urllib.request.Request(label_api, data=patch_body, method="PATCH")
+                    patch_req.add_header("Authorization", f"Bearer {token}")
+                    patch_req.add_header("Accept", "application/vnd.github+json")
+                    with urllib.request.urlopen(patch_req) as presp:
+                        if presp.status not in (200,):
+                            print(f"::warning::Could not update label (status {presp.status})")
+                return
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            print(f"::warning::Failed to read existing label ({e.code})")
+    # Create the label
+    create_api = f"https://api.github.com/repos/{owner}/{repo_name}/labels"
+    body = json.dumps({
+        "name": PENDING_LABEL,
+        "color": PENDING_LABEL_COLOR,
+        "description": PENDING_LABEL_DESC,
+    }).encode()
+    req = urllib.request.Request(create_api, data=body, method="POST")
+    req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("Accept", "application/vnd.github+json")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            if resp.status not in (200, 201):
+                print(f"::warning::Failed to create label (status {resp.status})")
+    except Exception as e:
+        print(f"::warning::Error creating label: {e}")
+
+
 """
 Label a merged PR with 'Backport pending' if it has no version label.
 
 Expected environment:
   GITHUB_EVENT_PATH: Path to the event JSON (GitHub sets this automatically)
   GITHUB_REPOSITORY: owner/repo
-  GITHUB_TOKEN: token with repo:issues scope (use GITHUB_TOKEN or a PAT)
+  label_token: token with repo:issues scope (use label_token or a PAT)
 
 This script is idempotent: if the PR already has a version label (vX.Y) or already
 has the 'Backport Pending' label, it exits without error.
