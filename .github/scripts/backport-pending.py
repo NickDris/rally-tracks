@@ -16,13 +16,13 @@ import json
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from typing import List
-import urllib.request
-import urllib.error
 
 VERSION_LABEL_RE = re.compile(r"^v\d+\.\d+$")
-PENDING_LABEL = "Backport pending"
+PENDING_LABEL = "Backport Pending"
 
 @dataclass
 class PRInfo:
