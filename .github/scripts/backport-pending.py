@@ -90,11 +90,13 @@ def ensure_label(owner: str, repo_name: str, token: str) -> None:
                 data = json.loads(resp.read().decode())
                 needs_update = (data.get("color") != PENDING_LABEL_COLOR.lower()) or (data.get("description") != PENDING_LABEL_DESC)
                 if needs_update:
-                    patch_body = json.dumps({
-                        "new_name": PENDING_LABEL,
-                        "color": PENDING_LABEL_COLOR,
-                        "description": PENDING_LABEL_DESC,
-                    }).encode()
+                    patch_body = json.dumps(
+                        {
+                            "new_name": PENDING_LABEL,
+                            "color": PENDING_LABEL_COLOR,
+                            "description": PENDING_LABEL_DESC,
+                        }
+                    ).encode()
                     patch_req = urllib.request.Request(label_api, data=patch_body, method="PATCH")
                     patch_req.add_header("Authorization", f"Bearer {token}")
                     patch_req.add_header("Accept", "application/vnd.github+json")
@@ -107,11 +109,13 @@ def ensure_label(owner: str, repo_name: str, token: str) -> None:
             print(f"::warning::Failed to read existing label ({e.code})")
     # Create the label
     create_api = f"https://api.github.com/repos/{owner}/{repo_name}/labels"
-    body = json.dumps({
-        "name": PENDING_LABEL,
-        "color": PENDING_LABEL_COLOR,
-        "description": PENDING_LABEL_DESC,
-    }).encode()
+    body = json.dumps(
+        {
+            "name": PENDING_LABEL,
+            "color": PENDING_LABEL_COLOR,
+            "description": PENDING_LABEL_DESC,
+        }
+    ).encode()
     req = urllib.request.Request(create_api, data=body, method="POST")
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("Accept", "application/vnd.github+json")
