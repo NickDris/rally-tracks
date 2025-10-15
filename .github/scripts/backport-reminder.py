@@ -147,30 +147,54 @@ def main() -> int:
 
     lookback_days = int(os.environ.get("LOOKBACK_DAYS", "7"))
     age_days = int(os.environ.get("PENDING_LABEL_AGE_DAYS", "7"))
+    print(f"[debug] Parameters: LOOKBACK_DAYS={lookback_days} PENDING_LABEL_AGE_DAYS={age_days}")
     now = dt.datetime.now(dt.timezone.utc)
     since = now - dt.timedelta(days=lookback_days)
     threshold = now - dt.timedelta(days=age_days)
+    print(f"[debug] now={now.isoformat()} since(lookback start)={since.isoformat()} threshold(remind if before)={threshold.isoformat()}")
 
     reminders: List[Dict[str, Any]] = []
     
-    for item in list_prs(f"repo:{owner}/{repo} is:pr is:merged", since):
+    search_filter = f"repo:{owner}/{repo} is:pr is:merged"
+    print(f"[debug] Search filter = '{search_filter}'")
+    for item in list_prs(search_filter, since):
         number = item.get("number") or int(item.get("url", "/").rstrip("/").split("/")[-1])
+        print(f"[debug] Considering PR #{number}")
         pr = get_pr(owner, repo, number)
+        if not pr.get("merged_at"):
+            print(f"[debug]  PR #{number} missing merged_at -> skip")
+            continue
 
         labels = pr.get("labels", [])
-        if has_pending_label(labels) or has_version_label(labels):
+        has_pending = has_pending_label(labels)
+        has_version = has_version_label(labels)
+        print(f"[debug]  labels={[l.get('name') for l in labels]} has_pending={has_pending} has_version={has_version}")
+        if has_pending or has_version:
+            print(f"[debug]  Skip PR #{number} because has_pending={has_pending} or has_version={has_version}")
             continue
 
         comments = get_issue_comments(owner, repo, number)
+        print(f"[debug]  fetched {len(comments)} comments")
         prev_time = last_reminder_time(comments)
-        if not prev_time or prev_time > threshold:
+        if prev_time is None:
+            print(f"[debug]  No previous reminder comment found -> skip (mode: re-remind only)")
+            continue
+        print(f"[debug]  last reminder at {prev_time.isoformat()} threshold={threshold.isoformat()}")
+        if prev_time > threshold:
+            print(f"[debug]  Cooling period not elapsed (prev_time > threshold) -> skip")
             continue
 
         author = pr.get("user", {}).get("login", "PR author")
         post_comment(owner, repo, number, f"{COMMENT_MARKER}\n@{author}\n{REMINDER_BODY}")
-        reminders.append({"pr": number, "author": author, "time_since_last_reminder": str(prev_time - threshold)})
+        delta = prev_time - threshold
+        reminders.append({"pr": number, "author": author, "time_since_last_reminder": str(delta)})
+        print(f"[debug]  Posted reminder on PR #{number} delta={delta}")
 
-    print(f"Reminders posted: {', '.join(f'#{r['pr']} (to @{r['author']})\nTime since last reminder: {r['time_since_last_reminder']}' for r in reminders)}")
+    if reminders:
+        summary = "; ".join(f"#{r['pr']} -> @{r['author']} (delta {r['time_since_last_reminder']})" for r in reminders)
+    else:
+        summary = "<none>"
+    print(f"Reminders posted: {summary}")
     return 0
 
 if __name__ == "__main__":
