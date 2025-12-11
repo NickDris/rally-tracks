@@ -311,6 +311,8 @@ def last_reminder_time(comments: list[dict[str, Any]], marker: str) -> dt.dateti
 
 def pr_needs_reminder(info: PRInfo, threshold: dt.datetime) -> bool:
     has_pending = any(label == PENDING_LABEL for label in info.labels)
+    LOG.info(f"PR #{info.number}: labels 1 = {info.labels}")
+    LOG.info(f"PR #{info.number}: labels 2 = {[label for label in info.labels]}")
     LOG.info(f"PR #{info.number}: has pending label = {has_pending}")
     if not has_pending:
         return False
