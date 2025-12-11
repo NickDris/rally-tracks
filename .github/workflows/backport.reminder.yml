@@ -41,7 +41,7 @@ jobs:
 
   remind:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'backport pending')
+    needs: label
     permissions:
       contents: read
       pull-requests: read
