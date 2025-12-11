@@ -21,7 +21,7 @@ env:
     BACKPORT_TOKEN: ${{ secrets.BACKPORT_TOKEN }}
 
 jobs:
-  reminder:
+  label:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,15 +34,25 @@ jobs:
         if: github.event_name == 'pull_request_target'
         run: |
           python github_ci_tools/scripts/backport.py --pr-mode label
-      - name: Send reminder for backport pending (single PR)
-        if: github.event_name == 'pull_request_target'
-        run: |
-          python github_ci_tools/scripts/backport.py --pr-mode remind --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
       - name: Add Backport pending label (bulk)
         if: github.event_name != 'pull_request_target'
         run: |
           python github_ci_tools/scripts/backport.py label --lookback-days ${{ github.event.inputs.lookback_days || '7' }}
+
+  remind:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'backport pending')
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Send reminder for backport pending (single PR)
+        if: github.event_name == 'pull_request_target'
+        run: |
+          python github_ci_tools/scripts/backport.py --pr-mode remind --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
       - name: Send reminder for backport pending (bulk)
-        if: github.event_name != 'pull_request_target'
         run: |
           python github_ci_tools/scripts/backport.py remind --lookback-days ${{ github.event.inputs.lookback_days || '7' }} --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
