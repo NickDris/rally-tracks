@@ -405,7 +405,7 @@ def configure(args: argparse.Namespace) -> None:
 def prefetch_prs(pr_mode: bool, lookback_days: int) -> list[dict[str, Any]]:
     if pr_mode:
         event = load_event()
-        LOG.info(f"Loaded event data: {event}")
+        LOG.info(json.dumps(event, indent=2))
         if event:
             pr_data = event.get("pull_request")
         else:
