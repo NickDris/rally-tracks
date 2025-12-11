@@ -356,6 +356,7 @@ def run_remind(prefetched_prs: list[dict[str, Any]], pending_reminder_age_days: 
         try:
             if not pr:
                 continue
+            LOG.info(f"PR #{pr.get('number','?')} with pr data \n{pr}")
             info = PRInfo.from_dict(pr)
             if pr_needs_reminder(info, threshold):
                 author = pr.get("user", {}).get("login", "PR author")
