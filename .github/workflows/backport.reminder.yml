@@ -24,7 +24,7 @@ env:
     BACKPORT_TOKEN: ${{ secrets.BACKPORT_TOKEN }}
 
 jobs:
-  label:
+  label_and_remind:
     runs-on: ubuntu-latest
     permissions:
       contents: read
