@@ -34,5 +34,5 @@ jobs:
         if: github.event_name == 'pull_request_target'
         run: |
             python github_ci_tools/scripts/backport.py --pr-mode label
-            sleep 25
+            sleep 120
             python github_ci_tools/scripts/backport.py --pr-mode remind --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
