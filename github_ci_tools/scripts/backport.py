@@ -356,7 +356,6 @@ def run_remind(prefetched_prs: list[dict[str, Any]], pending_reminder_age_days: 
         try:
             if not pr:
                 continue
-            LOG.info(f"PR #{pr.get('number','?')} with pr data \n{pr}")
             info = PRInfo.from_dict(pr)
             if pr_needs_reminder(info, threshold):
                 author = pr.get("user", {}).get("login", "PR author")
@@ -406,6 +405,7 @@ def configure(args: argparse.Namespace) -> None:
 def prefetch_prs(pr_mode: bool, lookback_days: int) -> list[dict[str, Any]]:
     if pr_mode:
         event = load_event()
+        LOG.info(f"Loaded event data: {event}")
         if event:
             pr_data = event.get("pull_request")
         else:
