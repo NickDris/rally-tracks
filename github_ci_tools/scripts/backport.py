@@ -306,13 +306,20 @@ def last_reminder_time(comments: list[dict[str, Any]], marker: str) -> dt.dateti
 
 
 def pr_needs_reminder(info: PRInfo, threshold: dt.datetime) -> bool:
-    if not any(label == PENDING_LABEL for label in info.labels):
+    has_pending = any(label == PENDING_LABEL for label in info.labels)
+    LOG.info(f"PR #{info.number}: has pending label = {has_pending}")
+    if not has_pending:
         return False
     comments = get_issue_comments(info.number)
+    LOG.info(f"PR #{info.number}: fetched {len(comments)} comments")
     prev_time = last_reminder_time(comments, COMMENT_MARKER_BASE)
+    LOG.info(f"PR #{info.number}: last reminder time = {prev_time}")
     if prev_time is None:
+        LOG.info(f"PR #{info.number}: no previous reminder found, needs reminder")
         return True
-    return prev_time < threshold
+    needs_reminder = prev_time < threshold
+    LOG.info(f"PR #{info.number}: prev_time {prev_time} < threshold {threshold} = {needs_reminder}")
+    return needs_reminder
 
 
 def delete_reminders(info: PRInfo) -> None:
