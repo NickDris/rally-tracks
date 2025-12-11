@@ -264,6 +264,10 @@ def run_label(prefetched_prs: list[dict[str, Any]], remove: bool) -> int:
         except Exception as e:
             LOG.error(f"Label error for PR #{pr.get('number','unknown')}: {e}")
             errors += 1
+    has_pending = any(label == PENDING_LABEL for label in info.labels)
+    LOG.info(f"PR #{info.number}: has pending label = {has_pending}")
+    has_pending_lower = any(label.lower() == PENDING_LABEL for label in info.labels)
+    LOG.info(f"PR #{info.number}: has pending label.lower = {has_pending_lower}")
     return errors
 
 
