@@ -33,6 +33,16 @@ jobs:
       - name: Add Backport pending label (single PR)
         if: github.event_name == 'pull_request_target'
         run: |
-            python github_ci_tools/scripts/backport.py --pr-mode label
-            sleep 120
-            python github_ci_tools/scripts/backport.py --pr-mode remind --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
+          python github_ci_tools/scripts/backport.py --pr-mode label
+      - name: Send reminder for backport pending (single PR)
+        if: github.event_name == 'pull_request_target'
+        run: |
+          python github_ci_tools/scripts/backport.py --pr-mode remind --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
+      - name: Add Backport pending label (bulk)
+        if: github.event_name != 'pull_request_target'
+        run: |
+          python github_ci_tools/scripts/backport.py label --lookback-days ${{ github.event.inputs.lookback_days || '7' }}
+      - name: Send reminder for backport pending (bulk)
+        if: github.event_name != 'pull_request_target'
+        run: |
+          python github_ci_tools/scripts/backport.py remind --lookback-days ${{ github.event.inputs.lookback_days || '7' }} --pending-reminder-age-days ${{ github.event.inputs.pending_label_age_days || '14' }}
