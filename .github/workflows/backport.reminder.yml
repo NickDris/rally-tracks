@@ -20,7 +20,7 @@ on:
         required: false
         default: '14'
       remove:
-        description: 'If set to true, remove pending labels instead of adding/reminding'
+        description: 'If set to true, remove pending labels/reminders instead of adding/reminding'
         required: false
         default: 'false'
 
